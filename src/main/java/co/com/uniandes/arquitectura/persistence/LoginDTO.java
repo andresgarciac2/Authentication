@@ -6,19 +6,20 @@ package co.com.uniandes.arquitectura.persistence;
  */
 public class LoginDTO {
 
-	String user;
+	int user;
 	String password;
+	String roleId;
 	
 	/**
 	 * @return the user
 	 */
-	public String getUser() {
+	public int getUser() {
 		return user;
 	}
 	/**
 	 * @param user the user to set
 	 */
-	public void setUser(String user) {
+	public void setUser(int user) {
 		this.user = user;
 	}
 	/**
@@ -32,6 +33,18 @@ public class LoginDTO {
 	 */
 	public void setPassword(String password) {
 		this.password = password;
+	}
+	/**
+	 * @return
+	 */
+	public String getRoleId() {
+		return roleId;
+	}
+	/**
+	 * @param roleId
+	 */
+	public void setRoleId(String roleId) {
+		this.roleId = roleId;
 	}
 	
 	

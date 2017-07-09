@@ -33,9 +33,11 @@ public class AuthServer extends AbstractVerticle {
 	
 	private void setRoutes(Router router) {
 		router.route().handler(BodyHandler.create());
+		router.route(HttpMethod.POST, "/create").handler(authenticationController::createAuth);
 		router.route(HttpMethod.POST, "/login").handler(authenticationController::login);
+		router.route(HttpMethod.POST, "/validate").handler(authenticationController::validateToken);
 		router.route(HttpMethod.GET, "/status").handler(this::status);
-
+		
 	}
 	private void status(RoutingContext ctx) {
 		ctx.response().setStatusCode(200).end();
