@@ -18,7 +18,6 @@ import io.vertx.rxjava.ext.web.RoutingContext;
 public class AuthenticationController implements Controller {
 
 	public void login(RoutingContext ctx) {
-
 		LoginDTO req = extractBodyAsJson(ctx, LoginDTO.class);
 		UserDTO user = AuthRepository.getUserAuth(req.getUser());
 		String jwToken = ""; 
@@ -29,7 +28,7 @@ public class AuthenticationController implements Controller {
 			Timestamp sqlTimeStamp = new java.sql.Timestamp(new Date(System.currentTimeMillis() + 1111111).getTime());
 			AuthRepository.createUserToken(user.getId(),sqlTimeStamp, jwToken);
 			ctx.response().headers().add("TOKEN", jwToken);
-			respondWithJson(ctx, 200, rta);
+			respondWithJson(ctx, 200, jwToken);
 		}else{
 			respondWithJson(ctx, 500, rta);
 		}
