@@ -20,7 +20,7 @@ static OracleJDBCConnection conn = OracleJDBCConnection.getDbCon();
 			UserDTO user = new UserDTO();
 			ResultSet result = null;
 	        PreparedStatement preparedStatement = null;
-	        String select = "SELECT * FROM tuser join tauthentication ON tuser.id = tauthentication.ID_USER and tuser.id = ?";
+	        String select = "SELECT USERS.FIRST_NAME,USERS.EMAIL,USERS.LAST_NAME,USER_AUTHENTICATION.PASSWORD,USER_AUTHENTICATION.PASSWORD_SALT,ROLE_ACCESS.ROLE_ID  FROM USERS join USER_AUTHENTICATION ON USERS.id = USER_AUTHENTICATION.USER_ID and USERS.id = ?  join ROLE_ACCESS on USERS.id = ROLE_ACCESS.USER_ID";
 			try {
 				preparedStatement = conn.conn.prepareStatement(select);
 				preparedStatement.setInt(1, cedula);
@@ -30,7 +30,7 @@ static OracleJDBCConnection conn = OracleJDBCConnection.getDbCon();
 				 while (result.next()) {
 					 AuthenticationDTO auth = new AuthenticationDTO();
 					 user.setId(cedula);
-					 user.setRoleId(result.getString(2));
+					 user.setRoleId(result.getInt(6));
 					 auth.setUserId(cedula);
 					 auth.setPassword(result.getBytes(4));
 					 auth.setSalt(result.getBytes(5));
@@ -155,7 +155,7 @@ static OracleJDBCConnection conn = OracleJDBCConnection.getDbCon();
 	public static int createUserToken(int user, Timestamp expiration, String token){
         int result = 0;
         PreparedStatement preparedStatement = null;
-        String insertUser = "INSERT INTO ttoken (id_user,EXPIRATION,token) VALUES (?,?,?)";
+        String insertUser = "INSERT INTO USER_SESSION_TOKEN (USER_ID,EXPIRATION_DATE,TOKEN) VALUES (?,?,?)";
 		try {
 			preparedStatement = conn.conn.prepareStatement(insertUser);
 

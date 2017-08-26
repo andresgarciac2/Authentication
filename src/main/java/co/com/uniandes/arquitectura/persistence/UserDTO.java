@@ -3,7 +3,7 @@ package co.com.uniandes.arquitectura.persistence;
 public class UserDTO {
 
 	int id;
-	String roleId;
+	int roleId;
 	AuthenticationDTO auth;
 	TokenDTO token;
 	
@@ -13,10 +13,10 @@ public class UserDTO {
 	public void setId(int id) {
 		this.id = id;
 	}
-	public String getRoleId() {
+	public int getRoleId() {
 		return roleId;
 	}
-	public void setRoleId(String roleId) {
+	public void setRoleId(int roleId) {
 		this.roleId = roleId;
 	}
 	public AuthenticationDTO getAuth() {
