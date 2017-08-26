@@ -5,11 +5,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
-import java.util.Date;
 
 import co.com.uniandes.arquitectura.persistence.AuthenticationDTO;
 import co.com.uniandes.arquitectura.persistence.TokenDTO;
 import co.com.uniandes.arquitectura.persistence.UserDTO;
+import co.com.uniandes.arquitectura.utils.Countries;
+import co.com.uniandes.arquitectura.utils.DniTypes;
 
 public class AuthRepository {
 
@@ -51,16 +52,17 @@ static OracleJDBCConnection conn = OracleJDBCConnection.getDbCon();
 			return user;
 	}
 	
-	public static int createAuth(int user, byte[] pass, byte[] salt){
+	public static int createAuth(int user, boolean isBlocked, byte[] pass, byte[] salt){
         int result = 0;
         PreparedStatement preparedStatement = null;
-        String insertAuth = "INSERT INTO tauthentication (id_user,password,salt) VALUES (?,?,?)";
+        String insertAuth = "INSERT INTO USER_AUTHENTICATION (user_id,is_blocked,password,password_salt) VALUES (?,?,?,?)";
 		try {
 			preparedStatement = conn.conn.prepareStatement(insertAuth);
 
 			preparedStatement.setInt(1, user);
-			preparedStatement.setBytes(2, pass);
-			preparedStatement.setBytes(3, salt);
+			preparedStatement.setInt(2, isBlocked ? 1 : 0);
+			preparedStatement.setBytes(3, pass);
+			preparedStatement.setBytes(4, salt);
 
 			// execute insert SQL stetement
 			result = preparedStatement.executeUpdate();
@@ -81,18 +83,27 @@ static OracleJDBCConnection conn = OracleJDBCConnection.getDbCon();
 		}
         return result;
 	}
-	
-	public static int createUser(int user, String role){
+
+	public static int createUser(int dni, String dniType, String country, String email, String firstName,
+	    String lastName, String address, String phone) {
         int result = 0;
+        
         PreparedStatement preparedStatement = null;
-        String insertUser = "INSERT INTO tuser (id,role_id) VALUES (?,?)";
+		String insertUser = 
+            "INSERT INTO USERS (ID,DNI,DNI_TYPE,COUNTRY,EMAIL,FIRST_NAME,LAST_NAME,ADDRESS,PHONE) VALUES (?,?,?,?,?,?,?,?,?)";
 		try {
 			preparedStatement = conn.conn.prepareStatement(insertUser);
 
-			preparedStatement.setInt(1, user);
-			preparedStatement.setString(2, role);
+			preparedStatement.setInt(1, dni);
+			preparedStatement.setInt(2, dni);
+			preparedStatement.setInt(3, DniTypes.getTypes().get(dniType));
+			preparedStatement.setInt(4, Countries.getCountries().get(country));
+			preparedStatement.setString(5, email);
+			preparedStatement.setString(6, firstName);
+			preparedStatement.setString(7, lastName);
+			preparedStatement.setString(8, address);
+			preparedStatement.setString(9, phone);
 
-			// execute insert SQL stetement
 			result = preparedStatement.executeUpdate();
 			System.out.println("sentencia ejecutada");
 			preparedStatement.close();
@@ -110,6 +121,35 @@ static OracleJDBCConnection conn = OracleJDBCConnection.getDbCon();
 			}
 		}
         return result;
+	}
+	
+	public static int createRoleAccess(int userId, int roleId){
+		int result = 0;
+
+		PreparedStatement preparedStatement = null;
+		String insertRole = "INSERT INTO ROLE_ACCESS (USER_ID,ROLE_ID) VALUES (?,?)";
+		try {
+			preparedStatement = conn.conn.prepareStatement(insertRole);
+			
+			preparedStatement.setInt(1, userId);
+			preparedStatement.setInt(2, roleId);
+
+			result = preparedStatement.executeUpdate();
+			System.out.println("sentencia ejecutada");
+			preparedStatement.close();
+			return result;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+			try {
+				preparedStatement.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return result;
 	}
 	
 	public static int createUserToken(int user, Timestamp expiration, String token){

@@ -9,6 +9,7 @@ import co.com.uniandes.arquitectura.jdbc.connection.AuthRepository;
 import co.com.uniandes.arquitectura.persistence.LoginDTO;
 import co.com.uniandes.arquitectura.persistence.TokenDTO;
 import co.com.uniandes.arquitectura.persistence.UserDTO;
+import co.com.uniandes.arquitectura.persistence.UsersDTO;
 import io.vertx.rxjava.ext.web.RoutingContext;
 
 /**
@@ -35,12 +36,14 @@ public class AuthenticationController implements Controller {
 	}
 	
 	public void createAuth(RoutingContext ctx) {
-		LoginDTO req = extractBodyAsJson(ctx, LoginDTO.class);
-		int userCreated = AuthRepository.createUser(req.getUser(), req.getRoleId());
+		UsersDTO req = extractBodyAsJson(ctx, UsersDTO.class);
+		int userCreated = AuthRepository.createUser(req.getDni(), req.getDniType(), req.getCountry(),
+			req.getEmail(), req.getFirstName(), req.getLastName(), req.getAddress(), req.getPhone());
 		if (userCreated == 1) {
+			AuthRepository.createRoleAccess(req.getDni(), req.getRoleId());
 			byte[] salt = AuthChecker.getNextSalt();
 			byte[] hash = AuthChecker.hash(req.getPassword().toCharArray(), salt);
-			int success = AuthRepository.createAuth(req.getUser(), hash, salt);
+			int success = AuthRepository.createAuth(req.getDni(), false , hash, salt);
 			String rta = success == 1 ? "user created successfully" : "The user could not be created"; 
 			respondWithJson(ctx, 200, rta);
 		} else {
