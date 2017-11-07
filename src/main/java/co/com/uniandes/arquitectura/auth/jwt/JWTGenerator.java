@@ -8,7 +8,7 @@ import java.util.Date;
 
 public class JWTGenerator {
 
-	public static String createJWT(String id, String subject, long ttlMillis) {
+	public static String createJWT(String id, String subject, long ttlMillis, int role) {
 	 
 	    SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 	 
@@ -21,6 +21,7 @@ public class JWTGenerator {
 	    JwtBuilder builder = Jwts.builder().setId(id)
 	                                .setIssuedAt(now)
 	                                .setSubject(subject)
+	                                .setAudience(Integer.toString(role))
 	                                .signWith(signatureAlgorithm, signingKey);
 	 
 	    if (ttlMillis >= 0) {

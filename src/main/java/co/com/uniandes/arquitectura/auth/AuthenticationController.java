@@ -8,6 +8,7 @@ import co.com.uniandes.arquitectura.controller.Controller;
 import co.com.uniandes.arquitectura.jdbc.connection.AuthRepository;
 import co.com.uniandes.arquitectura.persistence.LoginDTO;
 import co.com.uniandes.arquitectura.persistence.TokenDTO;
+import co.com.uniandes.arquitectura.persistence.UpdateUsersDTO;
 import co.com.uniandes.arquitectura.persistence.UserDTO;
 import co.com.uniandes.arquitectura.persistence.UsersDTO;
 import io.vertx.rxjava.ext.web.RoutingContext;
@@ -18,6 +19,25 @@ import io.vertx.rxjava.ext.web.RoutingContext;
  */
 public class AuthenticationController implements Controller {
 
+	public void getUserInfo(RoutingContext ctx){
+		int userId = Integer.parseInt(ctx.getBodyAsString());
+		
+		UsersDTO user = AuthRepository.getUserInformation(userId);
+		respondWithJson(ctx, 200, user);
+	}
+	
+	public void updateUserInfo(RoutingContext ctx) {
+		UpdateUsersDTO user = extractBodyAsJson(ctx, UpdateUsersDTO.class);
+		
+		int userUpdated = AuthRepository.updateUser(user.getDni(), user.getCountry(), user.getEmail(), user.getFirstName(), user.getAddress(), user.getPhone());
+	
+		if(userUpdated == 1){
+			respondWithJson(ctx, 200, "User Updated");
+		} else {
+			respondWithJson(ctx, 501, "user not updated");
+		}
+	}
+	
 	public void login(RoutingContext ctx) {
 		LoginDTO req = extractBodyAsJson(ctx, LoginDTO.class);
 		UserDTO user = AuthRepository.getUserAuth(req.getUser());
@@ -25,7 +45,7 @@ public class AuthenticationController implements Controller {
 		boolean success = AuthChecker.isExpectedPassword(req.getPassword().toCharArray(), user.getAuth().getSalt(), user.getAuth().getPassword());
 		String rta = success ? "the password match" : "the user or password does not match";
 		if (success) {
-			jwToken = JWTGenerator.createJWT(Integer.toString(user.getId()), "nnn", 1111111);
+			jwToken = JWTGenerator.createJWT(Integer.toString(user.getId()), user.getName(), 1111111, user.getRoleId());
 			Timestamp sqlTimeStamp = new java.sql.Timestamp(new Date(System.currentTimeMillis() + 1111111).getTime());
 			AuthRepository.createUserToken(user.getId(),sqlTimeStamp, jwToken);
 			ctx.response().headers().add("TOKEN", jwToken);
@@ -44,6 +64,7 @@ public class AuthenticationController implements Controller {
 			byte[] salt = AuthChecker.getNextSalt();
 			byte[] hash = AuthChecker.hash(req.getPassword().toCharArray(), salt);
 			int success = AuthRepository.createAuth(req.getDni(), false , hash, salt);
+			if (success == 1 && req.getRoleId() == 1) AuthRepository.createOfferor(req.getDni(), req.getFirstName(), 1);
 			String rta = success == 1 ? "user created successfully" : "The user could not be created"; 
 			respondWithJson(ctx, 200, rta);
 		} else {

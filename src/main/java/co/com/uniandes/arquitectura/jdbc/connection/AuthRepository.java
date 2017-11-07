@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import co.com.uniandes.arquitectura.persistence.AuthenticationDTO;
 import co.com.uniandes.arquitectura.persistence.TokenDTO;
 import co.com.uniandes.arquitectura.persistence.UserDTO;
+import co.com.uniandes.arquitectura.persistence.UsersDTO;
 import co.com.uniandes.arquitectura.utils.Countries;
 import co.com.uniandes.arquitectura.utils.DniTypes;
 
@@ -31,6 +32,7 @@ static OracleJDBCConnection conn = OracleJDBCConnection.getDbCon();
 					 AuthenticationDTO auth = new AuthenticationDTO();
 					 user.setId(cedula);
 					 user.setRoleId(result.getInt(6));
+					 user.setName(result.getString(1));
 					 auth.setUserId(cedula);
 					 auth.setPassword(result.getBytes(4));
 					 auth.setSalt(result.getBytes(5));
@@ -65,6 +67,73 @@ static OracleJDBCConnection conn = OracleJDBCConnection.getDbCon();
 			preparedStatement.setBytes(4, salt);
 
 			// execute insert SQL stetement
+			result = preparedStatement.executeUpdate();
+			System.out.println("sentencia ejecutada");
+			preparedStatement.close();
+			return result;
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+			try {
+				preparedStatement.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+        return result;
+	}
+	
+	public static int updateAuth(int user, byte[] pass, byte[] salt){
+        int result = 0;
+        PreparedStatement preparedStatement = null;
+        String insertAuth = "UPDATE USER_AUTHENTICATION SET password = ?, password_salt = ? WHERE user_id = ?";
+		try {
+			preparedStatement = conn.conn.prepareStatement(insertAuth);
+
+			preparedStatement.setBytes(1, pass);
+			preparedStatement.setBytes(2, salt);
+			preparedStatement.setInt(3, user);
+
+			// execute insert SQL stetement
+			result = preparedStatement.executeUpdate();
+			System.out.println("sentencia ejecutada");
+			preparedStatement.close();
+			return result;
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+			try {
+				preparedStatement.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+        return result;
+	}
+	
+	public static int updateUser(int dni, String country, String email, String firstName,
+		String address, String phone){
+		
+        int result = 0;
+        PreparedStatement preparedStatement = null;
+        String updateUser = "UPDATE USERS SET COUNTRY = ?, EMAIL = ?, FIRST_NAME = ?, ADDRESS = ?, PHONE = ?  WHERE ID = ?";
+		
+		try {
+			preparedStatement = conn.conn.prepareStatement(updateUser);
+
+			preparedStatement.setInt(1, Countries.getCountries().get(country));
+			preparedStatement.setString(2, email);
+			preparedStatement.setString(3, firstName);
+			preparedStatement.setString(4, address);
+			preparedStatement.setString(5, phone);
+			preparedStatement.setInt(6, dni);
+
 			result = preparedStatement.executeUpdate();
 			System.out.println("sentencia ejecutada");
 			preparedStatement.close();
@@ -152,6 +221,36 @@ static OracleJDBCConnection conn = OracleJDBCConnection.getDbCon();
 		return result;
 	}
 	
+	public static int createOfferor(int userId, String companyName, int state){
+		int result = 0;
+
+		PreparedStatement preparedStatement = null;
+		String insertRole = "INSERT INTO OFFEROR (USER_ID,COMPANY_NAME,STATE) VALUES (?,?,?)";
+		try {
+			preparedStatement = conn.conn.prepareStatement(insertRole);
+			
+			preparedStatement.setInt(1, userId);
+			preparedStatement.setString(2, companyName);
+			preparedStatement.setInt(3, state);
+
+			result = preparedStatement.executeUpdate();
+			System.out.println("sentencia ejecutada");
+			preparedStatement.close();
+			return result;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+			try {
+				preparedStatement.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+	
 	public static int createUserToken(int user, Timestamp expiration, String token){
         int result = 0;
         PreparedStatement preparedStatement = null;
@@ -171,7 +270,7 @@ static OracleJDBCConnection conn = OracleJDBCConnection.getDbCon();
 			
 		} catch (SQLIntegrityConstraintViolationException e) {
 			
-			insertUser = "UPDATE ttoken SET EXPIRATION = ?, token = ? WHERE id_user = ?";
+			insertUser = "UPDATE USER_SESSION_TOKEN SET EXPIRATION_DATE = ?, TOKEN = ? WHERE USER_ID = ?";
 			
 			try {
 				preparedStatement = conn.conn.prepareStatement(insertUser);
@@ -203,11 +302,52 @@ static OracleJDBCConnection conn = OracleJDBCConnection.getDbCon();
         return result;
 	}
 	
+	public static UsersDTO getUserInformation(int id){
+		UsersDTO user = null;
+		ResultSet result = null;
+        PreparedStatement preparedStatement = null;
+		String select = "SELECT * FROM USERS WHERE ID = ?";
+		
+		try {
+			preparedStatement = conn.conn.prepareStatement(select);
+			preparedStatement.setInt(1, id);
+
+			// execute insert SQL stetement
+			result = preparedStatement.executeQuery();
+			 while (result.next()) {
+				 user = new UsersDTO();
+				 
+				 user.setDni(result.getInt(1));
+				 user.setDniType(DniTypes.getInverseTypes().get(result.getInt(3)));
+				 user.setCountry(Countries.getInverseCountries().get(result.getInt(4)));
+				 user.setEmail(result.getString(5));
+				 user.setFirstName(result.getString(6));
+				 user.setLastName(result.getString(7));
+				 user.setAddress(result.getString(8));
+				 user.setPhone(result.getString(9));
+			    }
+			System.out.println("sentencia ejecutada");
+			preparedStatement.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+			try {
+				preparedStatement.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return user;
+	}
+	
 	public static TokenDTO getToken(int cedula){
 		TokenDTO token = null;
 		ResultSet result = null;
         PreparedStatement preparedStatement = null;
-        String select = "SELECT * FROM ttoken WHERE id_user = ?";
+        String select = "SELECT * FROM USER_SESSION_TOKEN WHERE USER_ID = ?";
 		try {
 			preparedStatement = conn.conn.prepareStatement(select);
 			preparedStatement.setInt(1, cedula);
