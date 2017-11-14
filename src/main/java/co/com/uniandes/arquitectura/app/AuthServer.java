@@ -45,6 +45,7 @@ public class AuthServer extends AbstractVerticle {
 		router.route(HttpMethod.POST, "/create").handler(authenticationController::createAuth);
 		router.route(HttpMethod.POST, "/login").handler(authenticationController::login);
 		router.route(HttpMethod.POST, "/validate").handler(authenticationController::validateToken);
+		router.route(HttpMethod.POST, "/recoverPassword").handler(authenticationController::recoverPassword);
 		router.route(HttpMethod.GET, "/status").handler(this::status);
 		
 	}

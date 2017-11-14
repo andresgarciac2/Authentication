@@ -13,7 +13,7 @@ public final class  OracleJDBCConnection {
     private Statement statement;
     public static OracleJDBCConnection db;
     private OracleJDBCConnection() {
-        String url= "jdbc:oracle:thin:@localhost:1522:xe";
+        String url= "jdbc:oracle:thin:@localhost:1521:xe";
         String driver = "oracle.jdbc.driver.OracleDriver";
         String userName = "uniandes";
         String password = "manage";

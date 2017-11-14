@@ -10,6 +10,7 @@ import co.com.uniandes.arquitectura.persistence.LoginDTO;
 import co.com.uniandes.arquitectura.persistence.TokenDTO;
 import co.com.uniandes.arquitectura.persistence.UserDTO;
 import co.com.uniandes.arquitectura.persistence.UsersDTO;
+import co.com.uniandes.arquitectura.utils.EmailSender;
 import io.vertx.rxjava.ext.web.RoutingContext;
 
 /**
@@ -66,4 +67,20 @@ public class AuthenticationController implements Controller {
 			respondWithJson(ctx, 501, "The session does not exist");
 		}
 	}
+	
+	public void recoverPassword(RoutingContext ctx) {
+		UsersDTO req = extractBodyAsJson(ctx, UsersDTO.class);
+		UserDTO user = AuthRepository.getUserAuth(req.getDni());
+		
+		if (req.getDni() != 0 && req.getEmail() != null) {
+			// Send password to user
+			System.out.println("email: " + req.getEmail());
+			System.out.println("pass: " + user.getAuth().getUserId());
+			EmailSender.sendEmail(req.getEmail(), user.getAuth().getPassword().toString());
+			respondWithJson(ctx, 200, "Email successfully sent to " + req.getEmail());
+		}else{
+			respondWithJson(ctx, 501, "Empty user data");
+		}
+	}
+	
 }
