@@ -30,7 +30,17 @@ public class AuthenticationController implements Controller {
 		UpdateUsersDTO user = extractBodyAsJson(ctx, UpdateUsersDTO.class);
 		
 		int userUpdated = AuthRepository.updateUser(user.getDni(), user.getCountry(), user.getEmail(), user.getFirstName(), user.getAddress(), user.getPhone());
-	
+		if (user.getPassword() != null) {
+			UserDTO userBd = AuthRepository.getUserAuth(user.getDni());
+			boolean success = AuthChecker.isExpectedPassword(user.getPassword().toCharArray(), userBd.getAuth().getSalt(), userBd.getAuth().getPassword());
+			if (success) {
+				byte[] salt = AuthChecker.getNextSalt();
+				byte[] hash = AuthChecker.hash(user.getNewPassword().toCharArray(), salt);
+				AuthRepository.updateAuth(user.getDni(), hash, salt);
+			} else {
+				respondWithJson(ctx, 501, "The password is incorrect");
+			}
+		}
 		if(userUpdated == 1){
 			respondWithJson(ctx, 200, "User Updated");
 		} else {
@@ -65,6 +75,7 @@ public class AuthenticationController implements Controller {
 			byte[] hash = AuthChecker.hash(req.getPassword().toCharArray(), salt);
 			int success = AuthRepository.createAuth(req.getDni(), false , hash, salt);
 			if (success == 1 && req.getRoleId() == 1) AuthRepository.createOfferor(req.getDni(), req.getFirstName(), 1);
+			else if (success == 1) AuthRepository.createCandidate(req.getDni(), req.getFirstName(), 1);
 			String rta = success == 1 ? "user created successfully" : "The user could not be created"; 
 			respondWithJson(ctx, 200, rta);
 		} else {
@@ -87,4 +98,6 @@ public class AuthenticationController implements Controller {
 			respondWithJson(ctx, 501, "The session does not exist");
 		}
 	}
+	
+	
 }

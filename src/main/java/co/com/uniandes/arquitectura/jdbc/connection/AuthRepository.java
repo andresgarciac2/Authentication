@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
+import java.util.Date;
 
 import co.com.uniandes.arquitectura.persistence.AuthenticationDTO;
 import co.com.uniandes.arquitectura.persistence.TokenDTO;
@@ -202,6 +203,39 @@ static OracleJDBCConnection conn = OracleJDBCConnection.getDbCon();
 			
 			preparedStatement.setInt(1, userId);
 			preparedStatement.setInt(2, roleId);
+
+			result = preparedStatement.executeUpdate();
+			System.out.println("sentencia ejecutada");
+			preparedStatement.close();
+			return result;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+			try {
+				preparedStatement.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+	
+	public static int createCandidate(int userId, String companyName, int state){
+		int result = 0;
+
+		PreparedStatement preparedStatement = null;
+		String insertRole = "INSERT INTO CANDIDATE (USER_ID,BIRTHDATE,CITY,DEPARTMENT, LEVEL_OF_SCHOOLING, STRATUM) VALUES (?,?,?,?,?,?)";
+		try {
+			preparedStatement = conn.conn.prepareStatement(insertRole);
+			
+			preparedStatement.setInt(1, userId);
+			preparedStatement.setTimestamp(2, new Timestamp(1818181L));
+			preparedStatement.setInt(3, state);
+			preparedStatement.setInt(4, state);
+			preparedStatement.setInt(5, state);
+			preparedStatement.setInt(6, state);
 
 			result = preparedStatement.executeUpdate();
 			System.out.println("sentencia ejecutada");
