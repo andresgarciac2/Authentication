@@ -51,7 +51,8 @@ public class EmailSender {
 
             // Create the html part
             BodyPart messageBodyPart = new MimeBodyPart();
-            String htmlMessage = "Su contraseña en el sistema SUBE es " + passText + ".";
+            String htmlMessage = "Se ha generado la siguiente contraseña temporal en el sistema SUBE: " + passText + ". \n"
+            					+ "Por favor actualice su contraseña la próxima vez que ingrese en el sistema.";
             messageBodyPart.setContent(htmlMessage, "text/html");
 
             // Add html part to multi part

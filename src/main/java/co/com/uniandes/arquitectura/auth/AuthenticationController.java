@@ -12,6 +12,7 @@ import co.com.uniandes.arquitectura.persistence.UpdateUsersDTO;
 import co.com.uniandes.arquitectura.persistence.UserDTO;
 import co.com.uniandes.arquitectura.persistence.UsersDTO;
 import co.com.uniandes.arquitectura.utils.EmailSender;
+import co.com.uniandes.arquitectura.utils.TemporalPassword;
 import io.vertx.rxjava.ext.web.RoutingContext;
 
 /**
@@ -105,11 +106,24 @@ public class AuthenticationController implements Controller {
 		UserDTO user = AuthRepository.getUserAuth(req.getDni());
 		
 		if (req.getDni() != 0 && req.getEmail() != null) {
-			// Send password to user
-			System.out.println("email: " + req.getEmail());
-			System.out.println("pass: " + user.getAuth().getUserId());
-			EmailSender.sendEmail(req.getEmail(), user.getAuth().getPassword().toString());
-			respondWithJson(ctx, 200, "Email successfully sent to " + req.getEmail());
+			// Set the user temporal password
+			TemporalPassword tempPass = new TemporalPassword();
+			System.out.println("Temporal password generated: " + tempPass.nextString());
+			
+			// Update password in db
+			byte[] salt = AuthChecker.getNextSalt();
+			byte[] hash = AuthChecker.hash(tempPass.nextString().toCharArray(), salt);
+			int success = AuthRepository.updateAuth(req.getDni(), hash, salt);
+			
+			if(success == 1){
+				// Send password to user
+				EmailSender.sendEmail(req.getEmail(), tempPass.nextString());
+				respondWithJson(ctx, 200, "Email successfully sent to " + req.getEmail());
+			} else {
+				respondWithJson(ctx, 500, "Error to recovery password");
+			}
+			
+			
 		}else{
 			respondWithJson(ctx, 501, "Empty user data");
 		}
