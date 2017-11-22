@@ -108,16 +108,16 @@ public class AuthenticationController implements Controller {
 		if (req.getDni() != 0 && req.getEmail() != null) {
 			// Set the user temporal password
 			TemporalPassword tempPass = new TemporalPassword();
-			System.out.println("Temporal password generated: " + tempPass.nextString());
-			
+
+			String newPassword = tempPass.nextString();
 			// Update password in db
 			byte[] salt = AuthChecker.getNextSalt();
-			byte[] hash = AuthChecker.hash(tempPass.nextString().toCharArray(), salt);
+			byte[] hash = AuthChecker.hash(newPassword.toCharArray(), salt);
 			int success = AuthRepository.updateAuth(req.getDni(), hash, salt);
 			
 			if(success == 1){
 				// Send password to user
-				EmailSender.sendEmail(req.getEmail(), tempPass.nextString());
+				EmailSender.sendEmail(req.getEmail(), newPassword);
 				respondWithJson(ctx, 200, "Email successfully sent to " + req.getEmail());
 			} else {
 				respondWithJson(ctx, 500, "Error to recovery password");
