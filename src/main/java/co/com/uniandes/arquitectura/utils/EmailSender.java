@@ -27,7 +27,7 @@ public class EmailSender {
     
     public static void sendEmail(String receiver, String passText){
     	Properties props = System.getProperties();
-        props.put("mail.smtp.starttls.enable", true); // added this line
+        props.put("mail.smtp.starttls.enable", "true"); // added this line
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.user", user);
         props.put("mail.smtp.password", pass);
@@ -62,7 +62,7 @@ public class EmailSender {
             message.setContent(multipart);
 
             // Send message
-            Transport transport = session.getTransport("smtps");
+            Transport transport = session.getTransport("smtp");
             transport.connect("smtp.gmail.com", user, pass);
             System.out.println("Transport: "+transport.toString());
             transport.sendMessage(message, message.getAllRecipients());
