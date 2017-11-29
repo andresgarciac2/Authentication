@@ -15,8 +15,8 @@ public final class  OracleJDBCConnection {
     private OracleJDBCConnection() {
         String url= "jdbc:oracle:thin:@localhost:1521:xe";
         String driver = "oracle.jdbc.driver.OracleDriver";
-        String userName = "uniandes";
-        String password = "manage";
+        String userName = "sube";
+        String password = "sube";
         try {
             Class.forName(driver).newInstance();
             this.conn = (Connection)DriverManager.getConnection(url,userName,password);
