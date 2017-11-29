@@ -2,11 +2,13 @@ package co.com.uniandes.arquitectura.auth;
 
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 import co.com.uniandes.arquitectura.auth.jwt.JWTGenerator;
 import co.com.uniandes.arquitectura.controller.Controller;
 import co.com.uniandes.arquitectura.jdbc.connection.AuthRepository;
 import co.com.uniandes.arquitectura.persistence.LoginDTO;
+import co.com.uniandes.arquitectura.persistence.OfferorDTO;
 import co.com.uniandes.arquitectura.persistence.TokenDTO;
 import co.com.uniandes.arquitectura.persistence.UpdateUsersDTO;
 import co.com.uniandes.arquitectura.persistence.UserDTO;
@@ -26,6 +28,24 @@ public class AuthenticationController implements Controller {
 		
 		UsersDTO user = AuthRepository.getUserInformation(userId);
 		respondWithJson(ctx, 200, user);
+	}
+	                                                                                                                                                                 
+	public void getOfferors(RoutingContext ctx){
+		
+		List<OfferorDTO> offerors = AuthRepository.getOfferors();
+		respondWithJson(ctx, 200, offerors);
+	}
+	
+	public void updateOfferor(RoutingContext ctx) {
+		OfferorDTO offeror = extractBodyAsJson(ctx, OfferorDTO.class);
+		
+		int result = AuthRepository.updateOfferor(offeror.getId(), offeror.getState());
+	
+		if(result == 1){
+			respondWithJson(ctx, 200, "Offeror Updated");
+		} else {
+			respondWithJson(ctx, 501, "Offeror not updated");
+		}
 	}
 	
 	public void updateUserInfo(RoutingContext ctx) {

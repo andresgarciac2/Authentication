@@ -5,9 +5,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import co.com.uniandes.arquitectura.persistence.AuthenticationDTO;
+import co.com.uniandes.arquitectura.persistence.OfferorDTO;
 import co.com.uniandes.arquitectura.persistence.TokenDTO;
 import co.com.uniandes.arquitectura.persistence.UserDTO;
 import co.com.uniandes.arquitectura.persistence.UsersDTO;
@@ -18,6 +21,65 @@ public class AuthRepository {
 
 static OracleJDBCConnection conn = OracleJDBCConnection.getDbCon();
     
+	public static int updateOfferor(int user, int state) {
+		int result = 0;
+		PreparedStatement preparedStatement = null;
+		String insertAuth = "UPDATE OFFEROR SET STATE = ? WHERE USER_ID = ?";
+		try {
+			preparedStatement = conn.conn.prepareStatement(insertAuth);
+			preparedStatement.setInt(1, state);
+			preparedStatement.setInt(2, user);
+
+			// execute insert SQL stetement
+			result = preparedStatement.executeUpdate();
+			System.out.println("sentencia ejecutada");
+			preparedStatement.close();
+			return result;
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				preparedStatement.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+
+	public static List<OfferorDTO> getOfferors() {
+		List<OfferorDTO> offerors = new ArrayList<OfferorDTO>();
+		ResultSet result = null;
+		PreparedStatement preparedStatement = null;
+		String select = "SELECT * FROM OFFEROR";
+		try {
+			preparedStatement = conn.conn.prepareStatement(select);
+
+			// execute insert SQL stetement
+			result = preparedStatement.executeQuery();
+			while (result.next()) {
+				OfferorDTO offeror = new OfferorDTO(result.getInt(1),result.getString(2),result.getInt(3));
+				offerors.add(offeror);
+			}
+			System.out.println("sentencia ejecutada");
+			preparedStatement.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				preparedStatement.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return offerors;
+	}
+
 	public static UserDTO getUserAuth(int cedula){
 			UserDTO user = new UserDTO();
 			ResultSet result = null;
